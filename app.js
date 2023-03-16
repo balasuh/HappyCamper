@@ -39,6 +39,8 @@ async function main() {
     await mongoose.connect(dbUrl);
     console.log('Connection to MongoDB open');
     // use `await mongoose.connect('mongodb://user:password@127.0.0.1:27017/test');` if your database has auth enabled
+    // Start the app after the connection is established
+    startApp();
 }
 
 // ** Connecting to MongoDB via Mongoose **
@@ -204,6 +206,8 @@ app.use((err, req, res, next) => {
     res.status(statusCode).render('error', { err });
 })
 
-app.listen(3000, () => {
-    console.log('Yelpcamp: Listening on Port 3000');
-})
+function startApp() {
+    app.listen(3000, () => {
+        console.log('Yelpcamp: Listening on Port 3000');
+    });
+}
