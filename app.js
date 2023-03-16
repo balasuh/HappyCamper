@@ -19,6 +19,16 @@ async function connectToSessionDB() {
         // Connect to the MongoDB database
         await client.connect();
         console.log('Connection to Session MongoDB open');
+        const store = new MongoStore({
+            client: client,
+            ddName: 'happy-camp',
+            secret: process.env.SESSION_KEY,
+            touchAfter: 24 * 60 * 60
+        })
+
+        store.on("error", function (e) {
+            console.log("Session Store error:", e);
+        })
     } catch (error) {
         console.error('Failed to connect to the database:', error);
     }
@@ -112,17 +122,6 @@ app.use(
     })
 );
 
-
-const store = new MongoStore({
-    client: client,
-    ddName: 'happy-camp',
-    secret: process.env.SESSION_KEY,
-    touchAfter: 24 * 60 * 60
-})
-
-store.on("error", function (e) {
-    console.log("Session Store error:", e);
-})
 
 // Use the below code for express-session
 //
