@@ -175,6 +175,7 @@ app.use((req, res, next) => {
             '/register', '/stylesheets/app.css'].includes(req.originalUrl)) {
             req.session.returnTo = req.originalUrl;
         }
+        console.log('Inside locals middleware try route')
         res.locals.currentUser = req.user || null;
         res.locals.success = req.flash('success'); //Set this before your route Handlers!
         res.locals.error = req.flash('error');
@@ -202,6 +203,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // })
 
 app.get('/', (req, res) => {
+    console.log('Calling root directory');
     res.render('home');
 })
 
@@ -223,6 +225,6 @@ app.use((err, req, res, next) => {
 
 function startApp() {
     app.listen(3000, () => {
-        console.log('Yelpcamp: Listening on Port 3000');
+        console.log('HappyCamper: Listening on Port 3000');
     });
 }
