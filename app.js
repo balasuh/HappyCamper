@@ -53,7 +53,7 @@ app.use(mongoSanitize());
 
 // const client = new MongoClient(dbUrl, { useUnifiedTopology: true });
 const store = new MongoStore({
-    url: dbUrl,
+    mongoUrl: dbUrl,
     // dbName: 'happy-camp',
     secret: process.env.SESSION_KEY,
     touchAfter: 24 * 60 * 60
