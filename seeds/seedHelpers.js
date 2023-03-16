@@ -1,0 +1,45 @@
+module.exports.descriptors = [
+    'Drei',
+    'Bad',
+    'Natur',
+    'Ferienpark',
+    'Campingplatz',
+    'Camp',
+    'Vital Camp',
+    'Bad',
+    'Terassencamping',
+    'Seecamping',
+    'Familienpark',
+    'Hundepark',
+    'Bad',
+    'Mauspark',
+    'Komfortcamping',
+    'Eurocamp',
+    'Freizeitpark',
+    'Bad'
+]
+
+module.exports.places = [
+    'Aulendorf',
+    'Borgentreich',
+    'Braunlage',
+    'Hilchenbach',
+    'Hoya',
+    'Ingolsdorf',
+    'Dusselforst',
+    'Laub',
+    'Kronach',
+    'Kreuznach',
+    'Buntspecht',
+    'Königsberg',
+    'Erfurt',
+    'Bach',
+    'Tal',
+    'Rosenfelder',
+    'Ostsee',
+    'Nordmühle',
+    'Westland',
+    'Füssing',
+    'Holmernhof'
+]
+
