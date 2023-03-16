@@ -11,19 +11,6 @@ const ejsMate = require('ejs-mate');
 const ExpressError = require('./utils/ExpressError');
 const ObjectId = mongoose.Types.ObjectId;
 const session = require('express-session');
-const MongoStore = require('connect-mongo');
-const { MongoClient } = require('mongodb');
-const client = new MongoClient(dbUrl, { useUnifiedTopology: true });
-async function connectToSessionDB() {
-    try {
-        // Connect to the MongoDB database
-        await client.connect();
-        console.log('Connection to Session MongoDB open');
-    } catch (error) {
-        console.error('Failed to connect to the database:', error);
-    }
-}
-connectToSessionDB();
 // const session = require('cookie-session');
 const flash = require('connect-flash');
 const passport = require('passport');
@@ -34,7 +21,8 @@ const mongoSanitize = require('express-mongo-sanitize');
 const usersRoutes = require('./routes/users')
 const campgroundsRoutes = require('./routes/campgrounds');
 const reviewsRoutes = require('./routes/reviews');
-const helmet = require('helmet');
+
+const MongoStore = require('connect-mongo');
 
 
 // ** Connecting to MongoDB via Mongoose **
@@ -56,10 +44,55 @@ const app = express();
 
 app.engine('ejs', ejsMate);
 app.set('view engine', 'ejs');
+app.use(express.urlencoded({ extended: true })); //parse req.body into JS format
+app.use(methodOverride('_method'));
 app.set('views', path.join(__dirname, 'views'));
 // app.use(express.json())
 app.use(mongoSanitize());
 // app.use(helmet());
+
+// const client = new MongoClient(dbUrl, { useUnifiedTopology: true });
+const store = new MongoStore({
+    client: client,
+    ddName: 'happy-camp',
+    secret: process.env.SESSION_KEY,
+    touchAfter: 24 * 60 * 60
+})
+store.on("error", function (e) {
+    console.log("Session Store error:", e);
+})
+
+// Use the below code for express-session
+//
+const sessionConfig = {
+    store: store,
+    name: '_rayman',
+    secret: process.env.SESSION_KEY,
+    resave: false,
+    saveUninitialized: false, //you'll learn why we do this later
+    cookie: {
+        httpOnly: true, //Basic security feature
+        // secure: true, // for prod with https certificate only
+        expires: Date.now() + 1000 * 60 * 60 * 24 * 7, // one week
+        maxAge: 1000 * 60 * 60 * 24 * 7 // one week
+    }
+}
+
+// Use the below code for cookie-session
+
+// const sessionConfig = {
+//     name: 'session',
+//     keys: ['thisshouldbeabettersecret!'],
+
+//     // Cookie Options
+//     httpOnly: true, //Basic security feature
+//     expires: Date.now() + 1000 * 60 * 60 * 24 * 7, // one week
+//     maxAge: 1000 * 60 * 60 * 24 * 7 // one week
+// }
+
+app.use(session(sessionConfig))
+app.use(flash());
+const helmet = require('helmet');
 
 const scriptSrcUrls = [
     "https://stackpath.bootstrapcdn.com/",
@@ -113,51 +146,6 @@ app.use(
 );
 
 
-const store = new MongoStore({
-    client: client,
-    ddName: 'happy-camp',
-    secret: process.env.SESSION_KEY,
-    touchAfter: 24 * 60 * 60
-})
-
-store.on("error", function (e) {
-    console.log("Session Store error:", e);
-})
-
-// Use the below code for express-session
-//
-const sessionConfig = {
-    store: store,
-    name: '_rayman',
-    secret: process.env.SESSION_KEY,
-    resave: false,
-    saveUninitialized: true, //you'll learn why we do this later
-    cookie: {
-        httpOnly: true, //Basic security feature
-        // secure: true, // for prod with https certificate only
-        expires: Date.now() + 1000 * 60 * 60 * 24 * 7, // one week
-        maxAge: 1000 * 60 * 60 * 24 * 7 // one week
-    }
-}
-
-// Use the below code for cookie-session
-
-// const sessionConfig = {
-//     name: 'session',
-//     keys: ['thisshouldbeabettersecret!'],
-
-//     // Cookie Options
-//     httpOnly: true, //Basic security feature
-//     expires: Date.now() + 1000 * 60 * 60 * 24 * 7, // one week
-//     maxAge: 1000 * 60 * 60 * 24 * 7 // one week
-// }
-
-app.use(session(sessionConfig))
-app.use(flash());
-
-app.use(express.urlencoded({ extended: true })); //parse req.body into JS format
-app.use(methodOverride('_method'));
-
 app.use(passport.initialize());
 app.use(passport.session());
 passport.use(new LocalStrategy(User.authenticate()));
@@ -179,29 +167,14 @@ app.use((req, res, next) => {
     next();
 })
 
+app.use('/', usersRoutes);
 app.use('/campgrounds', campgroundsRoutes);
 app.use('/campgrounds/:campId/reviews', reviewsRoutes);
-app.use('/', usersRoutes);
 app.use(express.static(path.join(__dirname, 'public')));
-
-// app.get('/fakeUser', async (req, res) => {
-//     const user = new User({
-//         email: "fake2@fake.com",
-//         username: 'fakeuser2'
-//     });
-//     const newUser = await User.register(user, 'fake');
-//     res.send(newUser);
-// })
 
 app.get('/', (req, res) => {
     res.render('home');
 })
-
-// app.get('/makecampground', async (req, res) => {
-//     const camp = new Campground({ title: 'My Backyard', description: 'Cheap camping.' });
-//     await camp.save();
-//     res.send(camp);
-// })
 
 app.all('*', (req, res, next) => {
     next(new ExpressError('Page Not Found', 404));
