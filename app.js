@@ -13,7 +13,8 @@ const ObjectId = mongoose.Types.ObjectId;
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
 const { MongoClient } = require('mongodb');
-const client = new MongoClient(`${dbUrl}`, { useUnifiedTopology: true });
+const client = new MongoClient(dbUrl, { useUnifiedTopology: true });
+client.connect();
 // const session = require('cookie-session');
 const flash = require('connect-flash');
 const passport = require('passport');
@@ -35,8 +36,8 @@ const Campground = require('./models/campground');
 // const { render } = require('ejs');
 
 async function main() {
-    await mongoose.connect(`${dbUrl}`);
-    console.log('Connection to Main MongoDB open');
+    await mongoose.connect(dbUrl);
+    console.log('Connection to MongoDB open');
     // use `await mongoose.connect('mongodb://user:password@127.0.0.1:27017/test');` if your database has auth enabled
 }
 
@@ -48,48 +49,8 @@ app.engine('ejs', ejsMate);
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 // app.use(express.json())
-
-app.use(express.urlencoded({ extended: true })); //parse req.body into JS format
-app.use(methodOverride('_method'));
-app.use(express.static(path.join(__dirname, 'public')));
-
 app.use(mongoSanitize());
 // app.use(helmet());
-
-async function connectToSessionDB() {
-    try {
-        // Connect to the MongoDB database
-        await client.connect();
-        console.log('Connection to Session MongoDB open');
-        const store = await new MongoStore({
-            client: client,
-            ddName: 'happy-camp',
-            secret: process.env.SESSION_KEY,
-            touchAfter: 24 * 60 * 60
-        })
-        store.on("error", function (e) {
-            console.log("Session Store error:", e);
-        })
-        const sessionConfig = {
-            store: store,
-            name: '_rayman',
-            secret: process.env.SESSION_KEY,
-            resave: false,
-            saveUninitialized: true, //you'll learn why we do this later
-            cookie: {
-                httpOnly: true, //Basic security feature
-                // secure: true, // for prod with https certificate only
-                expires: Date.now() + 1000 * 60 * 60 * 24 * 7, // one week
-                maxAge: 1000 * 60 * 60 * 24 * 7 // one week
-            }
-        }
-        app.use(session(sessionConfig))
-    } catch (error) {
-        console.error('Failed to connect to the database:', error);
-    }
-}
-connectToSessionDB();
-app.use(flash());
 
 const scriptSrcUrls = [
     "https://stackpath.bootstrapcdn.com/",
@@ -143,10 +104,32 @@ app.use(
 );
 
 
+const store = new MongoStore({
+    client: client,
+    ddName: 'happy-camp',
+    secret: process.env.SESSION_KEY,
+    touchAfter: 24 * 60 * 60
+})
+
+store.on("error", function (e) {
+    console.log("Session Store error:", e);
+})
 
 // Use the below code for express-session
 //
-
+const sessionConfig = {
+    store: store,
+    name: '_rayman',
+    secret: process.env.SESSION_KEY,
+    resave: false,
+    saveUninitialized: true, //you'll learn why we do this later
+    cookie: {
+        httpOnly: true, //Basic security feature
+        // secure: true, // for prod with https certificate only
+        expires: Date.now() + 1000 * 60 * 60 * 24 * 7, // one week
+        maxAge: 1000 * 60 * 60 * 24 * 7 // one week
+    }
+}
 
 // Use the below code for cookie-session
 
@@ -160,7 +143,11 @@ app.use(
 //     maxAge: 1000 * 60 * 60 * 24 * 7 // one week
 // }
 
+app.use(session(sessionConfig))
+app.use(flash());
 
+app.use(express.urlencoded({ extended: true })); //parse req.body into JS format
+app.use(methodOverride('_method'));
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -176,7 +163,6 @@ app.use((req, res, next) => {
         req.session.returnTo = req.originalUrl;
     }
     res.locals.currentUser = req.user;
-    console.log('req.user: ', req.user, 'currentUser: ', currentUser);
     res.locals.success = req.flash('success'); //Set this before your route Handlers!
     res.locals.error = req.flash('error');
     res.locals.warning = req.flash('warning');
@@ -184,10 +170,10 @@ app.use((req, res, next) => {
     next();
 })
 
-app.use('/', usersRoutes);
 app.use('/campgrounds', campgroundsRoutes);
 app.use('/campgrounds/:campId/reviews', reviewsRoutes);
-
+app.use('/', usersRoutes);
+app.use(express.static(path.join(__dirname, 'public')));
 
 // app.get('/fakeUser', async (req, res) => {
 //     const user = new User({
