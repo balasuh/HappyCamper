@@ -13,7 +13,7 @@ const ObjectId = mongoose.Types.ObjectId;
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
 const { MongoClient } = require('mongodb');
-const client = new MongoClient(dbUrl, { useUnifiedTopology: true });
+const client = new MongoClient(`${dbUrl}`, { useUnifiedTopology: true });
 // const session = require('cookie-session');
 const flash = require('connect-flash');
 const passport = require('passport');
@@ -35,8 +35,8 @@ const Campground = require('./models/campground');
 // const { render } = require('ejs');
 
 async function main() {
-    await mongoose.connect(dbUrl);
-    console.log('Connection to MongoDB open');
+    await mongoose.connect(`${dbUrl}`);
+    console.log('Connection to Main MongoDB open');
     // use `await mongoose.connect('mongodb://user:password@127.0.0.1:27017/test');` if your database has auth enabled
 }
 
@@ -218,5 +218,5 @@ app.use((err, req, res, next) => {
 })
 
 app.listen(3000, () => {
-    console.log('Yelpcamp: Listening on Port 3000');
+    console.log('HappyCamper: Listening on Port 3000');
 })
