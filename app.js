@@ -176,6 +176,7 @@ app.use((req, res, next) => {
         req.session.returnTo = req.originalUrl;
     }
     res.locals.currentUser = req.user;
+    console.log('req.user: ', req.user, 'currentUser: ', currentUser);
     res.locals.success = req.flash('success'); //Set this before your route Handlers!
     res.locals.error = req.flash('error');
     res.locals.warning = req.flash('warning');
