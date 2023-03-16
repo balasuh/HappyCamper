@@ -14,7 +14,6 @@ const session = require('express-session');
 const MongoStore = require('connect-mongo');
 const { MongoClient } = require('mongodb');
 const client = new MongoClient(dbUrl, { useUnifiedTopology: true });
-// Connect to the database and start the server
 async function connectToSessionDB() {
     try {
         // Connect to the MongoDB database
@@ -49,8 +48,6 @@ async function main() {
     await mongoose.connect(dbUrl);
     console.log('Connection to Main MongoDB open');
     // use `await mongoose.connect('mongodb://user:password@127.0.0.1:27017/test');` if your database has auth enabled
-    // Start the app after the connection is established
-    startApp();
 }
 
 // ** Connecting to MongoDB via Mongoose **
@@ -169,23 +166,17 @@ passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
 app.use((req, res, next) => {
-    try {
-        if (!['/login', '/', '/javascripts/validateForms.js', '/stylesheets/stars.css', '/javascripts/showPageMap.js',
-            '/javascripts/clusterMap.js', '/stylesheets/home.css', '/images/home_bg.jpg', '/images/login_top.jpg',
-            '/register', '/stylesheets/app.css'].includes(req.originalUrl)) {
-            req.session.returnTo = req.originalUrl;
-        }
-        console.log('Inside locals middleware try route')
-        res.locals.currentUser = req.user || null;
-        res.locals.success = req.flash('success'); //Set this before your route Handlers!
-        res.locals.error = req.flash('error');
-        res.locals.warning = req.flash('warning');
-        // console.log(req.query);
-        next();
-    } catch (err) {
-        console.log('Error in locals middleware: ', err);
-        next(err);
+    if (!['/login', '/', '/javascripts/validateForms.js', '/stylesheets/stars.css', '/javascripts/showPageMap.js',
+        '/javascripts/clusterMap.js', '/stylesheets/home.css', '/images/home_bg.jpg', '/images/login_top.jpg',
+        '/register', '/stylesheets/app.css'].includes(req.originalUrl)) {
+        req.session.returnTo = req.originalUrl;
     }
+    res.locals.currentUser = req.user;
+    res.locals.success = req.flash('success'); //Set this before your route Handlers!
+    res.locals.error = req.flash('error');
+    res.locals.warning = req.flash('warning');
+    // console.log(req.query);
+    next();
 })
 
 app.use('/campgrounds', campgroundsRoutes);
@@ -203,7 +194,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 // })
 
 app.get('/', (req, res) => {
-    console.log('Calling root directory');
     res.render('home');
 })
 
@@ -223,8 +213,6 @@ app.use((err, req, res, next) => {
     res.status(statusCode).render('error', { err });
 })
 
-function startApp() {
-    app.listen(3000, () => {
-        console.log('HappyCamper: Listening on Port 3000');
-    });
-}
+app.listen(3000, () => {
+    console.log('HappyCamper: Listening on Port 3000');
+})
