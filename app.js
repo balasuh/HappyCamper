@@ -164,7 +164,7 @@ app.use((req, res, next) => {
         '/register', '/stylesheets/app.css'].includes(req.originalUrl)) {
         req.session.returnTo = req.originalUrl;
     }
-    res.locals.currentUser = req.user;
+    res.locals.currentUser = req.user || null;
     res.locals.success = req.flash('success'); //Set this before your route Handlers!
     res.locals.error = req.flash('error');
     res.locals.warning = req.flash('warning');
