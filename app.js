@@ -48,8 +48,48 @@ app.engine('ejs', ejsMate);
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 // app.use(express.json())
+
+app.use(express.urlencoded({ extended: true })); //parse req.body into JS format
+app.use(methodOverride('_method'));
+app.use(express.static(path.join(__dirname, 'public')));
+
 app.use(mongoSanitize());
 // app.use(helmet());
+
+async function connectToSessionDB() {
+    try {
+        // Connect to the MongoDB database
+        await client.connect();
+        console.log('Connection to Session MongoDB open');
+        const store = await new MongoStore({
+            client: client,
+            ddName: 'happy-camp',
+            secret: process.env.SESSION_KEY,
+            touchAfter: 24 * 60 * 60
+        })
+        store.on("error", function (e) {
+            console.log("Session Store error:", e);
+        })
+        const sessionConfig = {
+            store: store,
+            name: '_rayman',
+            secret: process.env.SESSION_KEY,
+            resave: false,
+            saveUninitialized: true, //you'll learn why we do this later
+            cookie: {
+                httpOnly: true, //Basic security feature
+                // secure: true, // for prod with https certificate only
+                expires: Date.now() + 1000 * 60 * 60 * 24 * 7, // one week
+                maxAge: 1000 * 60 * 60 * 24 * 7 // one week
+            }
+        }
+        app.use(session(sessionConfig))
+    } catch (error) {
+        console.error('Failed to connect to the database:', error);
+    }
+}
+connectToSessionDB();
+app.use(flash());
 
 const scriptSrcUrls = [
     "https://stackpath.bootstrapcdn.com/",
@@ -103,41 +143,6 @@ app.use(
 );
 
 
-async function connectToSessionDB() {
-    try {
-        // Connect to the MongoDB database
-        await client.connect();
-        console.log('Connection to Session MongoDB open');
-        const store = await new MongoStore({
-            client: client,
-            ddName: 'happy-camp',
-            secret: process.env.SESSION_KEY,
-            touchAfter: 24 * 60 * 60
-        })
-        store.on("error", function (e) {
-            console.log("Session Store error:", e);
-        })
-        const sessionConfig = {
-            store: store,
-            name: '_rayman',
-            secret: process.env.SESSION_KEY,
-            resave: false,
-            saveUninitialized: true, //you'll learn why we do this later
-            cookie: {
-                httpOnly: true, //Basic security feature
-                // secure: true, // for prod with https certificate only
-                expires: Date.now() + 1000 * 60 * 60 * 24 * 7, // one week
-                maxAge: 1000 * 60 * 60 * 24 * 7 // one week
-            }
-        }
-        app.use(session(sessionConfig))
-    } catch (error) {
-        console.error('Failed to connect to the database:', error);
-    }
-}
-connectToSessionDB();
-
-
 
 // Use the below code for express-session
 //
@@ -155,10 +160,7 @@ connectToSessionDB();
 //     maxAge: 1000 * 60 * 60 * 24 * 7 // one week
 // }
 
-app.use(flash());
 
-app.use(express.urlencoded({ extended: true })); //parse req.body into JS format
-app.use(methodOverride('_method'));
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -181,10 +183,10 @@ app.use((req, res, next) => {
     next();
 })
 
+app.use('/', usersRoutes);
 app.use('/campgrounds', campgroundsRoutes);
 app.use('/campgrounds/:campId/reviews', reviewsRoutes);
-app.use('/', usersRoutes);
-app.use(express.static(path.join(__dirname, 'public')));
+
 
 // app.get('/fakeUser', async (req, res) => {
 //     const user = new User({
