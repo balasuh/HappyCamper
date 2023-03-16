@@ -1,8 +1,8 @@
 if (process.env.NODE_ENV !== "prod") {
     require('dotenv').config();
 }
-const dbUrl = 'mongodb://127.0.0.1:27017/happy-camp'; //dev
-// const dbUrl = process.env.DB_URL; //prod
+// const dbUrl = 'mongodb://127.0.0.1:27017/happy-camp'; //dev
+const dbUrl = process.env.DB_URL; //prod
 const express = require('express');
 const path = require('path');
 const mongoose = require('mongoose');
