@@ -53,8 +53,8 @@ app.use(mongoSanitize());
 
 // const client = new MongoClient(dbUrl, { useUnifiedTopology: true });
 const store = new MongoStore({
-    client: client,
-    ddName: 'happy-camp',
+    url: dburl,
+    // dbName: 'happy-camp',
     secret: process.env.SESSION_KEY,
     touchAfter: 24 * 60 * 60
 })
@@ -65,7 +65,7 @@ store.on("error", function (e) {
 // Use the below code for express-session
 //
 const sessionConfig = {
-    store: store,
+    store,
     name: '_rayman',
     secret: process.env.SESSION_KEY,
     resave: false,
