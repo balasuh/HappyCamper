@@ -9,6 +9,7 @@
   "author": "Hemanth",
   "license": "ISC",
   "dependencies": {
+    "mongodb": "^3.7.0",
     "@mapbox/mapbox-sdk": "0.15.0",
     "cloudinary": "1.35.0",
     "connect-flash": "0.1.1",
