@@ -118,11 +118,11 @@ store.on("error", function (e) {
 // Use the below code for express-session
 //
 const sessionConfig = {
-    store: store,
+    store,
     name: '_rayman',
     secret: process.env.SESSION_KEY,
     resave: false,
-    saveUninitialized: true, //you'll learn why we do this later
+    saveUninitialized: false, //you'll learn why we do this later
     cookie: {
         httpOnly: true, //Basic security feature
         // secure: true, // for prod with https certificate only
