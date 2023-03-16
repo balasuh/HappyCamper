@@ -14,7 +14,17 @@ const session = require('express-session');
 const MongoStore = require('connect-mongo');
 const { MongoClient } = require('mongodb');
 const client = new MongoClient(dbUrl, { useUnifiedTopology: true });
-client.connect();
+// Connect to the database and start the server
+async function connectToSessionDB() {
+    try {
+        // Connect to the MongoDB database
+        await client.connect();
+        console.log('Connection to Session MongoDB open');
+    } catch (error) {
+        console.error('Failed to connect to the database:', error);
+    }
+}
+connectToSessionDB();
 // const session = require('cookie-session');
 const flash = require('connect-flash');
 const passport = require('passport');
@@ -37,7 +47,7 @@ const Campground = require('./models/campground');
 
 async function main() {
     await mongoose.connect(dbUrl);
-    console.log('Connection to MongoDB open');
+    console.log('Connection to Main MongoDB open');
     // use `await mongoose.connect('mongodb://user:password@127.0.0.1:27017/test');` if your database has auth enabled
     // Start the app after the connection is established
     startApp();
