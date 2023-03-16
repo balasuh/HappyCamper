@@ -159,17 +159,22 @@ passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
 app.use((req, res, next) => {
-    if (!['/login', '/', '/javascripts/validateForms.js', '/stylesheets/stars.css', '/javascripts/showPageMap.js',
-        '/javascripts/clusterMap.js', '/stylesheets/home.css', '/images/home_bg.jpg', '/images/login_top.jpg',
-        '/register', '/stylesheets/app.css'].includes(req.originalUrl)) {
-        req.session.returnTo = req.originalUrl;
+    try {
+        if (!['/login', '/', '/javascripts/validateForms.js', '/stylesheets/stars.css', '/javascripts/showPageMap.js',
+            '/javascripts/clusterMap.js', '/stylesheets/home.css', '/images/home_bg.jpg', '/images/login_top.jpg',
+            '/register', '/stylesheets/app.css'].includes(req.originalUrl)) {
+            req.session.returnTo = req.originalUrl;
+        }
+        res.locals.currentUser = req.user || null;
+        res.locals.success = req.flash('success'); //Set this before your route Handlers!
+        res.locals.error = req.flash('error');
+        res.locals.warning = req.flash('warning');
+        // console.log(req.query);
+        next();
+    } catch (err) {
+        console.log('Error in locals middleware: ', err);
+        next(err);
     }
-    res.locals.currentUser = req.user || null;
-    res.locals.success = req.flash('success'); //Set this before your route Handlers!
-    res.locals.error = req.flash('error');
-    res.locals.warning = req.flash('warning');
-    // console.log(req.query);
-    next();
 })
 
 app.use('/campgrounds', campgroundsRoutes);
