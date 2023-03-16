@@ -14,26 +14,6 @@ const session = require('express-session');
 const MongoStore = require('connect-mongo');
 const { MongoClient } = require('mongodb');
 const client = new MongoClient(dbUrl, { useUnifiedTopology: true });
-async function connectToSessionDB() {
-    try {
-        // Connect to the MongoDB database
-        await client.connect();
-        console.log('Connection to Session MongoDB open');
-        const store = new MongoStore({
-            client: client,
-            ddName: 'happy-camp',
-            secret: process.env.SESSION_KEY,
-            touchAfter: 24 * 60 * 60
-        })
-
-        store.on("error", function (e) {
-            console.log("Session Store error:", e);
-        })
-    } catch (error) {
-        console.error('Failed to connect to the database:', error);
-    }
-}
-connectToSessionDB();
 // const session = require('cookie-session');
 const flash = require('connect-flash');
 const passport = require('passport');
@@ -56,7 +36,7 @@ const Campground = require('./models/campground');
 
 async function main() {
     await mongoose.connect(dbUrl);
-    console.log('Connection to Main MongoDB open');
+    console.log('Connection to MongoDB open');
     // use `await mongoose.connect('mongodb://user:password@127.0.0.1:27017/test');` if your database has auth enabled
 }
 
@@ -123,21 +103,45 @@ app.use(
 );
 
 
-// Use the below code for express-session
-//
-const sessionConfig = {
-    store: store,
-    name: '_rayman',
-    secret: process.env.SESSION_KEY,
-    resave: false,
-    saveUninitialized: true, //you'll learn why we do this later
-    cookie: {
-        httpOnly: true, //Basic security feature
-        // secure: true, // for prod with https certificate only
-        expires: Date.now() + 1000 * 60 * 60 * 24 * 7, // one week
-        maxAge: 1000 * 60 * 60 * 24 * 7 // one week
+async function connectToSessionDB() {
+    try {
+        // Connect to the MongoDB database
+        await client.connect();
+        console.log('Connection to Session MongoDB open');
+        const store = await new MongoStore({
+            client: client,
+            ddName: 'happy-camp',
+            secret: process.env.SESSION_KEY,
+            touchAfter: 24 * 60 * 60
+        })
+        store.on("error", function (e) {
+            console.log("Session Store error:", e);
+        })
+        const sessionConfig = {
+            store: store,
+            name: '_rayman',
+            secret: process.env.SESSION_KEY,
+            resave: false,
+            saveUninitialized: true, //you'll learn why we do this later
+            cookie: {
+                httpOnly: true, //Basic security feature
+                // secure: true, // for prod with https certificate only
+                expires: Date.now() + 1000 * 60 * 60 * 24 * 7, // one week
+                maxAge: 1000 * 60 * 60 * 24 * 7 // one week
+            }
+        }
+        app.use(session(sessionConfig))
+    } catch (error) {
+        console.error('Failed to connect to the database:', error);
     }
 }
+connectToSessionDB();
+
+
+
+// Use the below code for express-session
+//
+
 
 // Use the below code for cookie-session
 
@@ -151,7 +155,6 @@ const sessionConfig = {
 //     maxAge: 1000 * 60 * 60 * 24 * 7 // one week
 // }
 
-app.use(session(sessionConfig))
 app.use(flash());
 
 app.use(express.urlencoded({ extended: true })); //parse req.body into JS format
@@ -213,5 +216,5 @@ app.use((err, req, res, next) => {
 })
 
 app.listen(3000, () => {
-    console.log('HappyCamper: Listening on Port 3000');
+    console.log('Yelpcamp: Listening on Port 3000');
 })
