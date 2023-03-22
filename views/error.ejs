@@ -5,7 +5,7 @@
                 <h4 class="alert-heading">
                     <%= err.message %>
                 </h4>
-                <% if (process.env.NODE_ENV !=="production" ) { %>
+                <% if (process.env.NODE_ENV !=="prod" ) { %>
                     <p style="overflow-wrap: break-word;" class="mb-1">
                         <%= err.stack %>
                     </p>
