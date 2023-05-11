@@ -1,4 +1,5 @@
-const campgroundsTemp = JSON.parse(campgroundsJSON);
+const campgroundsEscaped = unescape(campgroundsEscapedJSON);
+const campgroundsTemp = JSON.parse(campgroundsEscaped);
 const campgrounds = { features: campgroundsTemp };
 
 mapboxgl.accessToken = mapToken;

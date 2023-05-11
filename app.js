@@ -112,6 +112,7 @@ const styleSrcUrls = [
     "https://use.fontawesome.com/",
     "https://cdn.jsdelivr.net/",
     "https://res.cloudinary.com/dfnajwnp3/",
+    "data:",
 ];
 const connectSrcUrls = [
     "https://*.tiles.mapbox.com",
@@ -156,7 +157,7 @@ passport.deserializeUser(User.deserializeUser());
 app.use((req, res, next) => {
     if (!['/login', '/', '/javascripts/validateForms.js', '/stylesheets/stars.css', '/javascripts/showPageMap.js',
         '/javascripts/clusterMap.js', '/stylesheets/home.css', '/images/home_bg.jpg', '/images/login_top.jpg',
-        '/register', '/stylesheets/app.css'].includes(req.originalUrl)) {
+        '/register', '/stylesheets/app.css', '/favicon.ico'].includes(req.originalUrl)) {
         req.session.returnTo = req.originalUrl;
     }
     res.locals.currentUser = req.user;
