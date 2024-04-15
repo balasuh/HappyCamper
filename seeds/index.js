@@ -5,7 +5,7 @@ const { descriptors, places } = require('./seedHelpers');
 const ObjectId = mongoose.Types.ObjectId;
 
 // ** Connecting to MongoDB via Mongoose **
-
+console.log('Env: ', process.env.NODE_ENV);
 main().catch(err => console.log('Mongo connection error', err));
 
 const Campground = require('../models/campground');
