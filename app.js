@@ -34,7 +34,8 @@ const Campground = require('./models/campground');
 
 // Comment to trigger a new commit - 15.04.2024
 async function main() {
-    await mongoose.connect(dbUrl);
+    // await mongoose.connect(dbUrl);
+    await mongoose.connect(process.env.DB_URL2, { useNewUrlParser: true, useUnifiedTopology: true });
     console.log('Connection to Main MongoDB open');
     // use `await mongoose.connect('mongodb://user:password@127.0.0.1:27017/test');` if your database has auth enabled
 }
