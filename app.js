@@ -32,6 +32,7 @@ main().catch(err => console.log('Mongo connection error', err));
 const Campground = require('./models/campground');
 // const { render } = require('ejs');
 
+// Comment to trigger a new commit - 15.04.2024
 async function main() {
     await mongoose.connect(dbUrl);
     console.log('Connection to Main MongoDB open');
