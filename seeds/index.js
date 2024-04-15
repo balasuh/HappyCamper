@@ -1,6 +1,4 @@
-if (process.env.NODE_ENV !== "prod") {
-    require('dotenv').config();
-}
+require('dotenv').config();
 const mongoose = require('mongoose');
 const cities = require('./cities');
 const { descriptors, places } = require('./seedHelpers');
