@@ -13,7 +13,7 @@ async function main() {
     // await mongoose.connect('mongodb://127.0.0.1:27017/happy-camp');
     console.log('Connection to MongoDB open');
     // use `await mongoose.connect('mongodb://user:password@127.0.0.1:27017/test');` if your database has auth enabled
-    await mongoose.connect('mongodb://admin:mongoSage@1BY4@127.0.0.1:27017/happy-camp');
+    await mongoose.connect(process.env.DB_URL2);
 }
 
 // ** Connecting to MongoDB via Mongoose **
