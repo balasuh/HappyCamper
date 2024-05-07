@@ -31,17 +31,22 @@ module.exports.createCampground = async (req, res) => {
 
 module.exports.showCampground = async (req, res) => {
     const { id } = req.params;
-    const campground = await Campground.findById(id).populate({
-        path: 'reviews', populate: {
-            path: 'author'
+    try {
+        const campground = await Campground.findById(id).populate({
+            path: 'reviews', populate: {
+                path: 'author'
+            }
+        }).populate('author');
+        // console.log(campground);
+        if (!campground) {
+            req.flash('error', 'Cannot Find That Campground!');
+            return res.redirect('/campgrounds');
         }
-    }).populate('author');
-    // console.log(campground);
-    if (!campground) {
-        req.flash('error', 'Cannot Find That Campground!');
+        res.render('campgrounds/show', { campground });
+    } catch (error) {
+        req.flash('error', 'You need to be logged in to access this campground');
         return res.redirect('/campgrounds');
     }
-    res.render('campgrounds/show', { campground });
 };
 
 module.exports.renderEditForm = async (req, res) => {
